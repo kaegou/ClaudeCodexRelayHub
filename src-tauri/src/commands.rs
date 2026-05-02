@@ -1,4 +1,4 @@
-use std::{process::Command, sync::Arc};
+use std::{net::TcpListener, process::Command, sync::Arc};
 
 use anyhow::Result;
 use tauri::{AppHandle, State};
@@ -173,6 +173,9 @@ pub async fn start_codex_proxy(state: State<'_, Arc<AppState>>) -> Result<(), St
         .lock()
         .map_err(|error| error.to_string())?
         .codex_proxy_port;
+    if !port_available(port) {
+        return Err(format!("Codex proxy port {port} is already in use"));
+    }
     let (tx, rx) = oneshot::channel();
     *shutdown_slot = Some(tx);
     let app_state = state.inner().clone();
@@ -220,6 +223,9 @@ pub async fn start_claude_proxy(state: State<'_, Arc<AppState>>) -> Result<(), S
         .lock()
         .map_err(|error| error.to_string())?
         .claude_proxy_port;
+    if !port_available(port) {
+        return Err(format!("Claude proxy port {port} is already in use"));
+    }
     let (tx, rx) = oneshot::channel();
     *shutdown_slot = Some(tx);
     let app_state = state.inner().clone();
@@ -256,19 +262,24 @@ pub async fn stop_claude_proxy(state: State<'_, Arc<AppState>>) -> Result<(), St
 #[tauri::command]
 pub async fn proxy_status(state: State<'_, Arc<AppState>>) -> Result<ProxyStatus, String> {
     let config = state.config.lock().map_err(|error| error.to_string())?;
+    let codex_running = state
+        .codex_shutdown
+        .lock()
+        .map_err(|error| error.to_string())?
+        .is_some();
+    let claude_running = state
+        .claude_shutdown
+        .lock()
+        .map_err(|error| error.to_string())?
+        .is_some();
+
     Ok(ProxyStatus {
-        codex_running: state
-            .codex_shutdown
-            .lock()
-            .map_err(|error| error.to_string())?
-            .is_some(),
-        claude_running: state
-            .claude_shutdown
-            .lock()
-            .map_err(|error| error.to_string())?
-            .is_some(),
+        codex_running,
+        claude_running,
         codex_port: config.codex_proxy_port,
         claude_port: config.claude_proxy_port,
+        codex_port_available: codex_running || port_available(config.codex_proxy_port),
+        claude_port_available: claude_running || port_available(config.claude_proxy_port),
         last_codex_member_id: state
             .last_codex_member_id
             .lock()
@@ -321,6 +332,10 @@ pub async fn write_claude_gateway_config(
         format!("Wrote Claude Desktop Gateway config to {}", path.display()),
     );
     Ok(path.display().to_string())
+}
+
+fn port_available(port: u16) -> bool {
+    TcpListener::bind(("127.0.0.1", port)).is_ok()
 }
 
 #[cfg(target_os = "windows")]

@@ -61,6 +61,8 @@ export type ProxyStatus = {
   claudeRunning: boolean;
   codexPort: number;
   claudePort: number;
+  codexPortAvailable: boolean;
+  claudePortAvailable: boolean;
   lastCodexMemberId: string | null;
 };
 

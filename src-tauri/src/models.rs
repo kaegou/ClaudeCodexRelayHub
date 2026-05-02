@@ -127,6 +127,8 @@ pub struct ProxyStatus {
     pub claude_running: bool,
     pub codex_port: u16,
     pub claude_port: u16,
+    pub codex_port_available: bool,
+    pub claude_port_available: bool,
     pub last_codex_member_id: Option<String>,
 }
 
