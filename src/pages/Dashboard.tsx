@@ -22,7 +22,7 @@ export default function Dashboard({
         <StatCard title="Codex Pool" value={`${healthyMembers}/${enabledMembers}`} detail="健康 / 启用成员" />
         <StatCard title="Codex Proxy" value={<StatusBadge value={status.codexRunning} />} detail={`127.0.0.1:${status.codexPort}/v1`} />
         <StatCard title="Claude Proxy" value={<StatusBadge value={status.claudeRunning} />} detail={`127.0.0.1:${status.claudePort}`} />
-        <StatCard title="Last Codex Member" value={status.lastCodexMemberId ?? '-'} detail="最近被调度的池成员" />
+        <StatCard title="Last Codex Member" value={status.lastCodexMemberId ?? '-'} detail="最近调度的池成员" />
       </div>
 
       <section className="panel hero-panel">

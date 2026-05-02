@@ -111,7 +111,7 @@ export default function App() {
         <header className="topbar">
           <div>
             <p className="eyebrow">OpenAI-Compatible Relay Control Center</p>
-            <h1>第三方中转接口共享池</h1>
+            <h1>第三方中转接口管理器</h1>
           </div>
           <button className="ghost" disabled={busy} onClick={refresh}>刷新</button>
         </header>

@@ -1,6 +1,6 @@
 import { api } from '../lib/tauri';
 import type { AppConfig, ProviderProfile } from '../lib/types';
-import { normalizeBaseUrl, uid } from '../lib/utils';
+import { joinModels, normalizeBaseUrl, splitModels, uid } from '../lib/utils';
 
 export default function Providers({
   config,
@@ -97,6 +97,7 @@ export default function Providers({
             <label>名称<input value={provider.name} onChange={(event) => updateProvider(provider.id, { name: event.target.value })} /></label>
             <label>API Base URL<input value={provider.apiBase} onBlur={() => updateProvider(provider.id, { apiBase: normalizeBaseUrl(provider.apiBase) })} onChange={(event) => updateProvider(provider.id, { apiBase: event.target.value })} /></label>
             <label>API Key<input type="password" value={provider.apiKey} onChange={(event) => updateProvider(provider.id, { apiKey: event.target.value })} /></label>
+            <label>模型列表<input value={joinModels(provider.models)} onChange={(event) => updateProvider(provider.id, { models: splitModels(event.target.value) })} /></label>
             <label>默认模型<input value={provider.defaultModel} onChange={(event) => updateProvider(provider.id, { defaultModel: event.target.value })} /></label>
             <label>思考模型<input value={provider.thinkModel} onChange={(event) => updateProvider(provider.id, { thinkModel: event.target.value })} /></label>
             <label className="checkbox-row"><input type="checkbox" checked={provider.enabled} onChange={(event) => updateProvider(provider.id, { enabled: event.target.checked })} />启用</label>

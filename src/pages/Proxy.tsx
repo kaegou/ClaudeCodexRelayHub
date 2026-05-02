@@ -27,7 +27,7 @@ export default function Proxy({
         <div>
           <div className="section-title">
             <span>Codex 本地代理</span>
-            <small>Codex 指向这个 OpenAI-compatible 端点，后端按共享池调度第三方 API Key。</small>
+            <small>Codex 指向这个 OpenAI-compatible 端点，后端会按池调度到第三方 API Key。</small>
           </div>
           <div className="endpoint-card">
             <StatusBadge value={status.codexRunning} />
@@ -42,7 +42,7 @@ export default function Proxy({
         <div>
           <div className="section-title">
             <span>Claude 本地代理</span>
-            <small>首版提供健康与模型端点，后续接入 Claude Desktop Gateway 转换。</small>
+            <small>提供健康检查、模型端点和 OpenAI-compatible 转发，供 Claude Desktop Gateway 使用。</small>
           </div>
           <div className="endpoint-card">
             <StatusBadge value={status.claudeRunning} />
