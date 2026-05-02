@@ -57,7 +57,11 @@ export default function CodexPool({
     const nextMember = {
       ...editing,
       apiBase: normalizeBaseUrl(editing.apiBase),
-      models: splitModels(modelsText)
+      models: splitModels(modelsText),
+      weight: Math.max(1, editing.weight),
+      priority: Math.max(1, editing.priority),
+      maxConcurrentRequests: Math.max(0, editing.maxConcurrentRequests),
+      cooldownSeconds: Math.max(0, editing.cooldownSeconds)
     };
     const exists = config.codexPool.members.some((member) => member.id === nextMember.id);
     await onSave({
@@ -85,6 +89,12 @@ export default function CodexPool({
 
   function formatTime(value: string | null) {
     return value ? new Date(value).toLocaleString() : '未检查';
+  }
+
+  function boundedNumber(value: string, min: number, max: number) {
+    const next = Number(value);
+    if (!Number.isFinite(next)) return min;
+    return Math.min(max, Math.max(min, Math.trunc(next)));
   }
 
   return (
@@ -168,10 +178,10 @@ export default function CodexPool({
             </label>
             <label>模型列表<input value={modelsText} onChange={(event) => setModelsText(event.target.value)} /></label>
             <label>默认模型<input value={editing.defaultModel} onChange={(event) => setEditing({ ...editing, defaultModel: event.target.value })} /></label>
-            <label>权重<input type="number" value={editing.weight} onChange={(event) => setEditing({ ...editing, weight: Number(event.target.value) })} /></label>
-            <label>优先级<input type="number" value={editing.priority} onChange={(event) => setEditing({ ...editing, priority: Number(event.target.value) })} /></label>
-            <label>并发上限<input type="number" value={editing.maxConcurrentRequests} onChange={(event) => setEditing({ ...editing, maxConcurrentRequests: Number(event.target.value) })} /></label>
-            <label>冷却秒数<input type="number" value={editing.cooldownSeconds} onChange={(event) => setEditing({ ...editing, cooldownSeconds: Number(event.target.value) })} /></label>
+            <label>权重<input type="number" min={1} max={10000} value={editing.weight} onChange={(event) => setEditing({ ...editing, weight: boundedNumber(event.target.value, 1, 10000) })} /></label>
+            <label>优先级<input type="number" min={1} max={10000} value={editing.priority} onChange={(event) => setEditing({ ...editing, priority: boundedNumber(event.target.value, 1, 10000) })} /></label>
+            <label>并发上限<input type="number" min={0} max={1000} value={editing.maxConcurrentRequests} onChange={(event) => setEditing({ ...editing, maxConcurrentRequests: boundedNumber(event.target.value, 0, 1000) })} /></label>
+            <label>冷却秒数<input type="number" min={0} max={86400} value={editing.cooldownSeconds} onChange={(event) => setEditing({ ...editing, cooldownSeconds: boundedNumber(event.target.value, 0, 86400) })} /></label>
             <label className="checkbox-row"><input type="checkbox" checked={editing.enabled} onChange={(event) => setEditing({ ...editing, enabled: event.target.checked })} />启用</label>
           </div>
           <div className="actions">

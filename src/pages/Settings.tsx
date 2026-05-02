@@ -34,6 +34,12 @@ OPENAI_API_KEY=${config.localProxyToken}`;
     onSave({ ...config, localProxyToken: `relay-${token}` });
   }
 
+  function portValue(value: string) {
+    const port = Number(value);
+    if (!Number.isFinite(port)) return 0;
+    return Math.min(65535, Math.max(1, Math.trunc(port)));
+  }
+
   return (
     <div className="page-stack">
       <section className="panel page-header-card">
@@ -54,11 +60,11 @@ OPENAI_API_KEY=${config.localProxyToken}`;
         <div className="form-grid">
           <label>
             Claude Proxy Port
-            <input type="number" value={config.claudeProxyPort} onChange={(event) => onSave({ ...config, claudeProxyPort: Number(event.target.value) })} />
+            <input type="number" min={1} max={65535} value={config.claudeProxyPort} onChange={(event) => onSave({ ...config, claudeProxyPort: portValue(event.target.value) })} />
           </label>
           <label>
             Codex Proxy Port
-            <input type="number" value={config.codexProxyPort} onChange={(event) => onSave({ ...config, codexProxyPort: Number(event.target.value) })} />
+            <input type="number" min={1} max={65535} value={config.codexProxyPort} onChange={(event) => onSave({ ...config, codexProxyPort: portValue(event.target.value) })} />
           </label>
           <label>
             Local Proxy Token
