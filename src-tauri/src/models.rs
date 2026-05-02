@@ -50,7 +50,10 @@ impl AppConfig {
         if self.codex_proxy_port == 0 {
             self.codex_proxy_port = 3458;
         }
-        if self.codex_pool_policy.is_empty() {
+        if !matches!(
+            self.codex_pool_policy.as_str(),
+            "priority-failover" | "round-robin" | "weighted-failover"
+        ) {
             self.codex_pool_policy = "weighted-failover".to_string();
         }
         if self.local_proxy_token.is_empty() {
@@ -59,6 +62,29 @@ impl AppConfig {
         for provider in &mut self.providers {
             if provider.health.is_empty() {
                 provider.health = "unknown".to_string();
+            }
+        }
+        for member in &mut self.codex_pool.members {
+            if member.weight == 0 {
+                member.weight = 1;
+            }
+            if member.weight > 10_000 {
+                member.weight = 10_000;
+            }
+            if member.priority == 0 {
+                member.priority = 1;
+            }
+            if member.priority > 10_000 {
+                member.priority = 10_000;
+            }
+            if member.max_concurrent_requests > 1_000 {
+                member.max_concurrent_requests = 1_000;
+            }
+            if member.cooldown_seconds > 86_400 {
+                member.cooldown_seconds = 86_400;
+            }
+            if member.health.is_empty() {
+                member.health = "unknown".to_string();
             }
         }
     }
