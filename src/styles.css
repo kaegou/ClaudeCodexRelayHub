@@ -80,7 +80,7 @@ h2 { font-size: 25px; }
 .log-filters { display: grid; grid-template-columns: 170px 1fr auto; gap: 10px; align-items: center; margin-bottom: 12px; }
 .log-filters small { color: var(--muted); white-space: nowrap; }
 .log-list { max-height: 330px; overflow: auto; display: grid; gap: 8px; }
-.log-row { display: grid; grid-template-columns: 90px 70px 1fr 50px 140px; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--panel-soft); }
+.log-row { display: grid; grid-template-columns: 90px 70px 1fr 50px 75px 140px; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--panel-soft); }
 .log-row p { grid-column: 1 / -1; margin: 0; color: var(--muted); }
 .log-row span, .log-row small, .log-row em { color: var(--muted); font-style: normal; }
 .empty { color: var(--muted); padding: 20px; text-align: center; }

@@ -18,7 +18,7 @@ export default function LogViewer({
       const targetMatches = targetFilter === 'all' || log.target === targetFilter;
       if (!targetMatches) return false;
       if (!normalizedKeyword) return true;
-      return [log.target, log.method, log.path, log.memberId ?? '', log.message, String(log.status)]
+      return [log.target, log.method, log.path, log.memberId ?? '', log.message, String(log.status), String(log.durationMs)]
         .join(' ')
         .toLowerCase()
         .includes(normalizedKeyword);
@@ -67,6 +67,7 @@ export default function LogViewer({
               <strong>{log.target}</strong>
               <code>{log.method} {log.path}</code>
               <em>{log.status || '-'}</em>
+              <small>{log.durationMs}ms</small>
               <small>{log.memberId ?? '-'}</small>
               <p>{log.message}</p>
             </div>
