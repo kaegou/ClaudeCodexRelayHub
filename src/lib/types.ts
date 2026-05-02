@@ -12,6 +12,9 @@ export type ProviderProfile = {
   supportsChatCompletions: boolean;
   enabled: boolean;
   notes: string;
+  health: string;
+  lastCheckedAt: string | null;
+  lastError: string | null;
 };
 
 export type CodexPoolMember = {

@@ -6,7 +6,7 @@ use tokio::sync::oneshot;
 
 use crate::{
     config, desktop_config,
-    models::{AppConfig, CodexPoolMember, ProxyStatus, RequestLogEntry},
+    models::{AppConfig, CodexPoolMember, ProviderProfile, ProxyStatus, RequestLogEntry},
     provider_client,
     proxy::{claude, codex},
     state::AppState,
@@ -92,6 +92,67 @@ pub async fn test_pool_member(
         .find(|member| member.id == member_id)
     {
         *member = checked.clone();
+    }
+    config::save_config(&app, &config).map_err(|error| error.to_string())?;
+    Ok(checked)
+}
+
+#[tauri::command]
+pub async fn test_provider(
+    app: AppHandle,
+    state: State<'_, Arc<AppState>>,
+    provider_id: String,
+) -> Result<ProviderProfile, String> {
+    let provider = {
+        let config = state.config.lock().map_err(|error| error.to_string())?;
+        config
+            .providers
+            .iter()
+            .find(|provider| provider.id == provider_id)
+            .cloned()
+            .ok_or_else(|| "provider not found".to_string())?
+    };
+
+    let checked = match provider_client::test_provider(&state.http, provider).await {
+        Ok(provider) => provider,
+        Err(error) => {
+            let mut config = state.config.lock().map_err(|error| error.to_string())?;
+            let updated = if let Some(provider) = config
+                .providers
+                .iter_mut()
+                .find(|provider| provider.id == provider_id)
+            {
+                provider.health = if error.to_string().contains("HTTP 401")
+                    || error.to_string().contains("HTTP 403")
+                {
+                    "auth_error".to_string()
+                } else if error.to_string().contains("HTTP 429") {
+                    "rate_limited".to_string()
+                } else {
+                    "server_error".to_string()
+                };
+                provider.last_error = Some(error.to_string());
+                Some(provider.clone())
+            } else {
+                None
+            };
+
+            if let Some(provider) = updated {
+                config::save_config(&app, &config).map_err(|error| error.to_string())?;
+                return Ok(provider);
+            }
+
+            return Err(error.to_string());
+        }
+    };
+
+    let mut config = state.config.lock().map_err(|error| error.to_string())?;
+    if let Some(provider) = config
+        .providers
+        .iter_mut()
+        .find(|provider| provider.id == provider_id)
+    {
+        *provider = checked.clone();
     }
     config::save_config(&app, &config).map_err(|error| error.to_string())?;
     Ok(checked)

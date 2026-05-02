@@ -56,6 +56,11 @@ impl AppConfig {
         if self.local_proxy_token.is_empty() {
             self.local_proxy_token = "local-codex-relay".to_string();
         }
+        for provider in &mut self.providers {
+            if provider.health.is_empty() {
+                provider.health = "unknown".to_string();
+            }
+        }
     }
 }
 
@@ -75,6 +80,12 @@ pub struct ProviderProfile {
     pub supports_chat_completions: bool,
     pub enabled: bool,
     pub notes: String,
+    #[serde(default)]
+    pub health: String,
+    #[serde(default)]
+    pub last_checked_at: Option<String>,
+    #[serde(default)]
+    pub last_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

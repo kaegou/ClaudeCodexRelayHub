@@ -58,6 +58,9 @@ pub fn longxia_claude_provider() -> ProviderProfile {
         supports_chat_completions: true,
         enabled: true,
         notes: "OpenAI-compatible relay template".to_string(),
+        health: "unknown".to_string(),
+        last_checked_at: None,
+        last_error: None,
     }
 }
 
