@@ -30,6 +30,7 @@ pub fn run() {
             commands::save_app_config,
             commands::test_pool_member,
             commands::test_provider,
+            commands::refresh_health,
             commands::start_codex_proxy,
             commands::stop_codex_proxy,
             commands::start_claude_proxy,

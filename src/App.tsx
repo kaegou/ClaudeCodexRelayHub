@@ -74,6 +74,17 @@ export default function App() {
     }
   }
 
+  async function refreshHealth() {
+    setBusy(true);
+    try {
+      const nextConfig = await api.refreshHealth();
+      setConfig(nextConfig);
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
   useEffect(() => {
     refresh();
     const timer = window.setInterval(refresh, 5000);
@@ -113,7 +124,10 @@ export default function App() {
             <p className="eyebrow">OpenAI-Compatible Relay Control Center</p>
             <h1>第三方中转接口管理器</h1>
           </div>
-          <button className="ghost" disabled={busy} onClick={refresh}>刷新</button>
+          <div className="actions">
+            <button className="ghost" disabled={busy} onClick={refreshHealth}>刷新健康状态</button>
+            <button className="ghost" disabled={busy} onClick={refresh}>刷新</button>
+          </div>
         </header>
 
         {error && <div className="alert error">{error}</div>}

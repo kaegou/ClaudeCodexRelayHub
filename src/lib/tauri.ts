@@ -6,6 +6,7 @@ export const api = {
   saveConfig: (nextConfig: AppConfig) => invoke<AppConfig>('save_app_config', { nextConfig }),
   testPoolMember: (memberId: string) => invoke<CodexPoolMember>('test_pool_member', { memberId }),
   testProvider: (providerId: string) => invoke<ProviderProfile>('test_provider', { providerId }),
+  refreshHealth: () => invoke<AppConfig>('refresh_health'),
   startCodexProxy: () => invoke<void>('start_codex_proxy'),
   stopCodexProxy: () => invoke<void>('stop_codex_proxy'),
   startClaudeProxy: () => invoke<void>('start_claude_proxy'),

@@ -25,7 +25,7 @@ pub fn start(app: AppHandle, state: Arc<AppState>) {
     });
 }
 
-async fn refresh_once(app: &AppHandle, state: &Arc<AppState>) -> anyhow::Result<()> {
+pub async fn refresh_once(app: &AppHandle, state: &Arc<AppState>) -> anyhow::Result<()> {
     let (providers, members) = {
         let config = state.config.lock().expect("config lock poisoned");
         (

@@ -5,7 +5,7 @@ use tauri::{AppHandle, State};
 use tokio::sync::oneshot;
 
 use crate::{
-    config, desktop_config,
+    config, desktop_config, health,
     models::{AppConfig, CodexPoolMember, ProviderProfile, ProxyStatus, RequestLogEntry},
     provider_client,
     proxy::{claude, codex},
@@ -156,6 +156,22 @@ pub async fn test_provider(
     }
     config::save_config(&app, &config).map_err(|error| error.to_string())?;
     Ok(checked)
+}
+
+#[tauri::command]
+pub async fn refresh_health(
+    app: AppHandle,
+    state: State<'_, Arc<AppState>>,
+) -> Result<AppConfig, String> {
+    let app_state = state.inner().clone();
+    health::refresh_once(&app, &app_state)
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(state
+        .config
+        .lock()
+        .map_err(|error| error.to_string())?
+        .clone())
 }
 
 #[tauri::command]
