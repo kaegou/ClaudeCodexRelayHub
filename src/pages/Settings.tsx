@@ -13,6 +13,7 @@ export default function SettingsPage({
   onSave: (config: AppConfig) => Promise<void>;
 }) {
   const [message, setMessage] = useState<string | null>(null);
+  const [showToken, setShowToken] = useState(false);
   const codexBaseUrl = `http://127.0.0.1:${config.codexProxyPort}/v1`;
   const codexEnv = `OPENAI_BASE_URL=${codexBaseUrl}
 OPENAI_API_KEY=${config.localProxyToken}`;
@@ -24,6 +25,13 @@ OPENAI_API_KEY=${config.localProxyToken}`;
     } catch (error) {
       setMessage(String(error));
     }
+  }
+
+  function generateToken() {
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    onSave({ ...config, localProxyToken: `relay-${token}` });
   }
 
   return (
@@ -54,7 +62,11 @@ OPENAI_API_KEY=${config.localProxyToken}`;
           </label>
           <label>
             Local Proxy Token
-            <input value={config.localProxyToken} onChange={(event) => onSave({ ...config, localProxyToken: event.target.value })} />
+            <div className="input-row token-row">
+              <input type={showToken ? 'text' : 'password'} value={config.localProxyToken} onChange={(event) => onSave({ ...config, localProxyToken: event.target.value })} />
+              <button className="ghost small" type="button" onClick={() => setShowToken(!showToken)}>{showToken ? '隐藏' : '显示'}</button>
+              <button className="ghost small" type="button" disabled={busy} onClick={generateToken}>生成</button>
+            </div>
           </label>
         </div>
       </section>
