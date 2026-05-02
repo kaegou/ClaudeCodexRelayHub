@@ -88,11 +88,24 @@ h2 { font-size: 25px; }
 .log-row span, .log-row small, .log-row em { color: var(--muted); font-style: normal; }
 .empty { color: var(--muted); padding: 20px; text-align: center; }
 .warning-panel { border-color: rgba(184,121,0,.25); background: #fffaf0; }
+.readiness-score { display: grid; justify-items: end; gap: 4px; }
+.readiness-score strong { color: var(--primary); font-size: 42px; line-height: 1; }
+.readiness-score span { color: var(--muted); font-size: 13px; font-weight: 800; }
+.readiness-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.readiness-card { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--panel-soft); }
+.readiness-card strong { color: var(--heading); }
+.readiness-card p { margin: 5px 0 0; color: var(--muted); }
+.readiness-card.pass svg { color: var(--green); }
+.readiness-card.warn svg { color: var(--yellow); }
+.readiness-card.todo svg { color: var(--red); }
+.guide-list { display: grid; gap: 12px; }
+.guide-list ol { margin: 0; padding-left: 20px; color: var(--text); }
+.guide-list li + li { margin-top: 8px; }
 
 @media (max-width: 1050px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: center; overflow-x: auto; }
   .sidebar nav { display: flex; }
-  .stats-grid, .cards-grid, .two-column, .hero-panel, .page-header-card { grid-template-columns: 1fr; }
+  .stats-grid, .cards-grid, .two-column, .hero-panel, .page-header-card, .readiness-grid { grid-template-columns: 1fr; }
   .form-panel .form-grid, .log-filters { grid-template-columns: 1fr; }
 }

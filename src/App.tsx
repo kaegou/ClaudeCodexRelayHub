@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, Database, KeyRound, Router, Settings, ShieldCheck } from 'lucide-react';
+import { Activity, ClipboardCheck, Database, KeyRound, Router, Settings, ShieldCheck } from 'lucide-react';
 import { api } from './lib/tauri';
 import type { AppConfig, CodexPoolMember, ProxyStatus, RequestLogEntry } from './lib/types';
 import Dashboard from './pages/Dashboard';
@@ -7,9 +7,11 @@ import CodexPool from './pages/CodexPool';
 import Providers from './pages/Providers';
 import Proxy from './pages/Proxy';
 import SettingsPage from './pages/Settings';
+import ReadinessPage from './pages/Readiness';
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard', icon: Activity },
+  { id: 'readiness', label: 'Readiness', icon: ClipboardCheck },
   { id: 'pool', label: 'Codex Pool', icon: Database },
   { id: 'providers', label: 'Providers', icon: KeyRound },
   { id: 'proxy', label: 'Proxy', icon: Router },
@@ -144,6 +146,9 @@ export default function App() {
 
         {activeTab === 'dashboard' && (
           <Dashboard config={config} status={status} logs={logs} activeClaudeProvider={activeClaudeProvider} onClearLogs={clearLogs} />
+        )}
+        {activeTab === 'readiness' && (
+          <ReadinessPage config={config} status={status} activeClaudeProvider={activeClaudeProvider} />
         )}
         {activeTab === 'pool' && (
           <CodexPool config={config} busy={busy} onSave={saveConfig} onTestMember={testMember} />
