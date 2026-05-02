@@ -12,12 +12,7 @@ use chrono::Utc;
 use serde_json::json;
 use tokio::{net::TcpListener, sync::oneshot};
 
-use crate::{
-    logging::sanitize,
-    models::RequestLogEntry,
-    pool,
-    state::AppState,
-};
+use crate::{logging::sanitize, models::RequestLogEntry, pool, state::AppState};
 
 pub async fn serve_codex(
     state: Arc<AppState>,
@@ -56,12 +51,24 @@ async fn models(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Respo
     };
 
     let Some(member) = member else {
-        return openai_error(StatusCode::SERVICE_UNAVAILABLE, "no_available_member", "No healthy Codex pool member is available");
+        return openai_error(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "no_available_member",
+            "No healthy Codex pool member is available",
+        );
     };
 
-    *state.last_codex_member_id.lock().expect("member lock poisoned") = Some(member.id.clone());
+    *state
+        .last_codex_member_id
+        .lock()
+        .expect("member lock poisoned") = Some(member.id.clone());
     let url = format!("{}/models", member.api_base.trim_end_matches('/'));
-    let response = state.http.get(url).bearer_auth(&member.api_key).send().await;
+    let response = state
+        .http
+        .get(url)
+        .bearer_auth(&member.api_key)
+        .send()
+        .await;
     handle_upstream_response(state, member.id, "GET", "/v1/models", start, response).await
 }
 
@@ -82,7 +89,14 @@ async fn forward_nested(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    forward(state, method, headers, format!("/{category}/{endpoint}"), body).await
+    forward(
+        state,
+        method,
+        headers,
+        format!("/{category}/{endpoint}"),
+        body,
+    )
+    .await
 }
 
 async fn forward(
@@ -102,23 +116,44 @@ async fn forward(
     };
 
     let Some(member) = member else {
-        return openai_error(StatusCode::SERVICE_UNAVAILABLE, "no_available_member", "No healthy Codex pool member is available");
+        return openai_error(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "no_available_member",
+            "No healthy Codex pool member is available",
+        );
     };
 
-    *state.last_codex_member_id.lock().expect("member lock poisoned") = Some(member.id.clone());
+    *state
+        .last_codex_member_id
+        .lock()
+        .expect("member lock poisoned") = Some(member.id.clone());
     let url = format!("{}{}", member.api_base.trim_end_matches('/'), path);
-    let mut request = state.http.request(method.clone(), url).bearer_auth(&member.api_key);
+    let mut request = state
+        .http
+        .request(method.clone(), url)
+        .bearer_auth(&member.api_key);
 
     for (name, value) in headers.iter() {
         let name_text = name.as_str().to_ascii_lowercase();
-        if matches!(name_text.as_str(), "authorization" | "host" | "content-length") {
+        if matches!(
+            name_text.as_str(),
+            "authorization" | "host" | "content-length"
+        ) {
             continue;
         }
         request = request.header(name, value);
     }
 
     let response = request.body(body).send().await;
-    handle_upstream_response(state, member.id, method.as_str(), &format!("/v1{path}"), start, response).await
+    handle_upstream_response(
+        state,
+        member.id,
+        method.as_str(),
+        &format!("/v1{path}"),
+        start,
+        response,
+    )
+    .await
 }
 
 async fn handle_upstream_response(
@@ -141,7 +176,12 @@ async fn handle_upstream_response(
                 if status.is_success() {
                     pool::mark_success(&mut config, &member_id);
                 } else {
-                    pool::mark_failure(&mut config, &member_id, Some(status_code), format!("HTTP {status_code}"));
+                    pool::mark_failure(
+                        &mut config,
+                        &member_id,
+                        Some(status_code),
+                        format!("HTTP {status_code}"),
+                    );
                 }
             }
 
@@ -159,12 +199,23 @@ async fn handle_upstream_response(
             let mut builder = Response::builder().status(status);
             for (name, value) in headers.iter() {
                 let name_text = name.as_str().to_ascii_lowercase();
-                if matches!(name_text.as_str(), "content-length" | "connection" | "transfer-encoding") {
+                if matches!(
+                    name_text.as_str(),
+                    "content-length" | "connection" | "transfer-encoding"
+                ) {
                     continue;
                 }
                 builder = builder.header(name, value);
             }
-            builder.body(axum::body::Body::from(body)).unwrap_or_else(|_| openai_error(StatusCode::BAD_GATEWAY, "bad_gateway", "Failed to build upstream response"))
+            builder
+                .body(axum::body::Body::from(body))
+                .unwrap_or_else(|_| {
+                    openai_error(
+                        StatusCode::BAD_GATEWAY,
+                        "bad_gateway",
+                        "Failed to build upstream response",
+                    )
+                })
         }
         Err(error) => {
             {
@@ -181,7 +232,11 @@ async fn handle_upstream_response(
                 duration_ms: start.elapsed().as_millis(),
                 message: sanitize(&error.to_string()),
             });
-            openai_error(StatusCode::BAD_GATEWAY, "bad_gateway", "Failed to reach upstream provider")
+            openai_error(
+                StatusCode::BAD_GATEWAY,
+                "bad_gateway",
+                "Failed to reach upstream provider",
+            )
         }
     }
 }
@@ -213,16 +268,24 @@ fn authorize(state: &AppState, headers: &HeaderMap) -> Option<Response> {
     if bearer_ok || key_ok {
         None
     } else {
-        Some(openai_error(StatusCode::UNAUTHORIZED, "authentication_error", "Invalid local proxy token"))
+        Some(openai_error(
+            StatusCode::UNAUTHORIZED,
+            "authentication_error",
+            "Invalid local proxy token",
+        ))
     }
 }
 
 fn openai_error(status: StatusCode, code: &str, message: &str) -> Response {
-    (status, Json(json!({
-        "error": {
-            "message": message,
-            "type": code,
-            "code": code
-        }
-    }))).into_response()
+    (
+        status,
+        Json(json!({
+            "error": {
+                "message": message,
+                "type": code,
+                "code": code
+            }
+        })),
+    )
+        .into_response()
 }

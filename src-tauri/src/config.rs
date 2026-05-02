@@ -26,8 +26,10 @@ pub fn load_config(app: &AppHandle) -> Result<AppConfig> {
         return Ok(config);
     }
 
-    let content = fs::read_to_string(&path).with_context(|| format!("failed to read {}", path.display()))?;
-    let mut config: AppConfig = serde_json::from_str(&content).with_context(|| format!("invalid config json at {}", path.display()))?;
+    let content =
+        fs::read_to_string(&path).with_context(|| format!("failed to read {}", path.display()))?;
+    let mut config: AppConfig = serde_json::from_str(&content)
+        .with_context(|| format!("invalid config json at {}", path.display()))?;
     config.ensure_defaults();
     Ok(config)
 }

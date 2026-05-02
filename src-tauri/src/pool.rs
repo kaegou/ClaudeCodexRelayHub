@@ -11,7 +11,12 @@ pub fn choose_member(config: &mut AppConfig) -> Option<CodexPoolMember> {
 }
 
 pub fn mark_success(config: &mut AppConfig, member_id: &str) {
-    if let Some(member) = config.codex_pool.members.iter_mut().find(|m| m.id == member_id) {
+    if let Some(member) = config
+        .codex_pool
+        .members
+        .iter_mut()
+        .find(|m| m.id == member_id)
+    {
         member.health = "healthy".to_string();
         member.last_error = None;
         member.cooldown_until = None;
@@ -21,7 +26,12 @@ pub fn mark_success(config: &mut AppConfig, member_id: &str) {
 }
 
 pub fn mark_failure(config: &mut AppConfig, member_id: &str, status: Option<u16>, error: String) {
-    if let Some(member) = config.codex_pool.members.iter_mut().find(|m| m.id == member_id) {
+    if let Some(member) = config
+        .codex_pool
+        .members
+        .iter_mut()
+        .find(|m| m.id == member_id)
+    {
         member.failure_count += 1;
         member.inflight = member.inflight.saturating_sub(1);
         member.last_error = Some(error);
@@ -31,7 +41,9 @@ pub fn mark_failure(config: &mut AppConfig, member_id: &str, status: Option<u16>
             }
             Some(429) => {
                 member.health = "rate_limited".to_string();
-                member.cooldown_until = Some((Utc::now() + Duration::seconds(member.cooldown_seconds as i64)).to_rfc3339());
+                member.cooldown_until = Some(
+                    (Utc::now() + Duration::seconds(member.cooldown_seconds as i64)).to_rfc3339(),
+                );
             }
             Some(code) if code >= 500 => {
                 member.health = "server_error".to_string();
@@ -57,8 +69,16 @@ fn choose_weighted(config: &mut AppConfig) -> Option<CodexPoolMember> {
         config.codex_pool.members[a]
             .priority
             .cmp(&config.codex_pool.members[b].priority)
-            .then(config.codex_pool.members[b].weight.cmp(&config.codex_pool.members[a].weight))
-            .then(config.codex_pool.members[a].inflight.cmp(&config.codex_pool.members[b].inflight))
+            .then(
+                config.codex_pool.members[b]
+                    .weight
+                    .cmp(&config.codex_pool.members[a].weight),
+            )
+            .then(
+                config.codex_pool.members[a]
+                    .inflight
+                    .cmp(&config.codex_pool.members[b].inflight),
+            )
     });
     take_member(config, candidates.first().copied())
 }
@@ -69,7 +89,8 @@ fn choose_round_robin(config: &mut AppConfig) -> Option<CodexPoolMember> {
         return None;
     }
     let cursor = config.codex_pool.round_robin_cursor % candidates.len();
-    config.codex_pool.round_robin_cursor = (config.codex_pool.round_robin_cursor + 1) % candidates.len();
+    config.codex_pool.round_robin_cursor =
+        (config.codex_pool.round_robin_cursor + 1) % candidates.len();
     take_member(config, Some(candidates[cursor]))
 }
 

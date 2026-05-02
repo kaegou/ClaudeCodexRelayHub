@@ -10,7 +10,8 @@ use crate::models::AppConfig;
 pub fn write_claude_desktop_gateway(app: &AppHandle, config: &AppConfig) -> Result<PathBuf> {
     let path = claude_desktop_config_path(app)?;
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).with_context(|| format!("failed to create {}", parent.display()))?;
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create {}", parent.display()))?;
     }
 
     if path.exists() {
@@ -38,14 +39,17 @@ pub fn write_claude_desktop_gateway(app: &AppHandle, config: &AppConfig) -> Resu
     });
 
     let tmp = path.with_extension("json.tmp");
-    fs::write(&tmp, serde_json::to_string_pretty(&gateway)?).with_context(|| format!("failed to write {}", tmp.display()))?;
+    fs::write(&tmp, serde_json::to_string_pretty(&gateway)?)
+        .with_context(|| format!("failed to write {}", tmp.display()))?;
     fs::rename(&tmp, &path).with_context(|| format!("failed to replace {}", path.display()))?;
     Ok(path)
 }
 
 fn claude_desktop_config_path(app: &AppHandle) -> Result<PathBuf> {
     if let Ok(appdata) = std::env::var("APPDATA") {
-        return Ok(PathBuf::from(appdata).join("Claude").join("claude_desktop_config.json"));
+        return Ok(PathBuf::from(appdata)
+            .join("Claude")
+            .join("claude_desktop_config.json"));
     }
 
     Ok(app
