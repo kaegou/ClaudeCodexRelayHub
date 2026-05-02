@@ -1,11 +1,11 @@
-use std::sync::Arc;
+use std::{process::Command, sync::Arc};
 
 use anyhow::Result;
 use tauri::{AppHandle, State};
 use tokio::sync::oneshot;
 
 use crate::{
-    config,
+    config, desktop_config,
     models::{AppConfig, CodexPoolMember, ProxyStatus, RequestLogEntry},
     provider_client,
     proxy::{claude, codex},
@@ -159,3 +159,49 @@ pub async fn proxy_status(state: State<'_, Arc<AppState>>) -> Result<ProxyStatus
 pub async fn get_logs(state: State<'_, Arc<AppState>>) -> Result<Vec<RequestLogEntry>, String> {
     Ok(state.logs.list())
 }
+
+#[tauri::command]
+pub async fn write_codex_environment(state: State<'_, Arc<AppState>>) -> Result<String, String> {
+    let config = state.config.lock().map_err(|error| error.to_string())?.clone();
+    let base_url = format!("http://127.0.0.1:{}/v1", config.codex_proxy_port);
+
+    set_user_env("OPENAI_BASE_URL", &base_url)?;
+    set_user_env("OPENAI_API_KEY", &config.local_proxy_token)?;
+    set_user_env("CODEX_RELAY_BASE_URL", &base_url)?;
+    set_user_env("CODEX_RELAY_API_KEY", &config.local_proxy_token)?;
+
+    state.logs.info("codex", format!("Wrote Codex environment for {base_url}"));
+    Ok(format!("Codex environment variables written for {base_url}"))
+}
+
+#[tauri::command]
+pub async fn write_claude_gateway_config(
+    app: AppHandle,
+    state: State<'_, Arc<AppState>>,
+) -> Result<String, String> {
+    let config = state.config.lock().map_err(|error| error.to_string())?.clone();
+    let path = desktop_config::write_claude_desktop_gateway(&app, &config).map_err(|error| error.to_string())?;
+    state.logs.info("claude", format!("Wrote Claude Desktop Gateway config to {}", path.display()));
+    Ok(path.display().to_string())
+}
+
+#[cfg(target_os = "windows")]
+fn set_user_env(name: &str, value: &str) -> Result<(), String> {
+    let status = Command::new("reg")
+        .args(["add", "HKCU\\Environment", "/v", name, "/t", "REG_SZ", "/d", value, "/f"])
+        .status()
+        .map_err(|error| error.to_string())?;
+
+    if !status.success() {
+        return Err(format!("failed to write user environment variable {name}"));
+    }
+
+    std::env::set_var(name, value);
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn set_user_env(_name: &str, _value: &str) -> Result<(), String> {
+    Err("writing persistent user environment variables is only implemented on Windows".to_string())
+}
+

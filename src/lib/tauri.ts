@@ -10,5 +10,7 @@ export const api = {
   startClaudeProxy: () => invoke<void>('start_claude_proxy'),
   stopClaudeProxy: () => invoke<void>('stop_claude_proxy'),
   proxyStatus: () => invoke<ProxyStatus>('proxy_status'),
-  getLogs: () => invoke<RequestLogEntry[]>('get_logs')
+  getLogs: () => invoke<RequestLogEntry[]>('get_logs'),
+  writeCodexEnvironment: () => invoke<string>('write_codex_environment'),
+  writeClaudeGatewayConfig: () => invoke<string>('write_claude_gateway_config')
 };

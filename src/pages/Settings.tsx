@@ -1,15 +1,38 @@
+import { useState } from 'react';
+import { api } from '../lib/tauri';
 import type { AppConfig } from '../lib/types';
 
-export default function SettingsPage({ config, busy, onSave }: { config: AppConfig; busy: boolean; onSave: (config: AppConfig) => Promise<void> }) {
+export default function SettingsPage({
+  config,
+  busy,
+  onSave
+}: {
+  config: AppConfig;
+  busy: boolean;
+  onSave: (config: AppConfig) => Promise<void>;
+}) {
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function run(action: () => Promise<string>) {
+    setMessage(null);
+    try {
+      setMessage(await action());
+    } catch (error) {
+      setMessage(String(error));
+    }
+  }
+
   return (
     <div className="page-stack">
       <section className="panel page-header-card">
         <div>
           <p className="eyebrow">Local Settings</p>
           <h2>本地配置</h2>
-          <p>代理默认仅绑定 127.0.0.1，不对局域网或公网开放。</p>
+          <p>代理默认只监听 127.0.0.1，不对局域网或公网开放。</p>
         </div>
       </section>
+
+      {message && <section className="alert error">{message}</section>}
 
       <section className="panel form-panel">
         <div className="section-title">
@@ -36,13 +59,21 @@ export default function SettingsPage({ config, busy, onSave }: { config: AppConf
         <span>Codex 推荐配置</span>
         <code>OPENAI_BASE_URL=http://127.0.0.1:{config.codexProxyPort}/v1</code>
         <code>OPENAI_API_KEY={config.localProxyToken}</code>
-        <p>首版不直接写 Codex 配置文件，避免误改未知客户端；后续可按你的 Codex 客户端格式增加一键写入。</p>
+        <p>点击下面按钮会写入当前 Windows 用户环境变量，新终端或新启动的 Codex 进程会读取到。</p>
+        <div className="actions">
+          <button disabled={busy} onClick={() => run(api.writeCodexEnvironment)}>写入 Codex 环境变量</button>
+        </div>
+      </section>
+
+      <section className="panel warning-panel">
+        <strong>Claude Desktop Gateway</strong>
+        <p>写入前会自动备份现有 Claude Desktop 配置，然后把 Gateway 指向本地 Claude 代理。</p>
+        <button disabled={busy} onClick={() => run(api.writeClaudeGatewayConfig)}>写入 Claude Desktop Gateway 配置</button>
       </section>
 
       <section className="panel warning-panel">
         <strong>安全提示</strong>
         <p>API Key 当前保存在本机应用配置目录中。不要把配置文件、截图或日志发给他人。删除池成员前会要求确认。</p>
-        <button disabled={busy} onClick={() => alert('Claude Desktop Gateway 写入将在下一批实现。')}>Claude Desktop 写入配置</button>
       </section>
     </div>
   );

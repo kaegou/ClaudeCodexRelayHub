@@ -45,8 +45,11 @@ async fn health() -> impl IntoResponse {
     Json(json!({ "status": "ok", "target": "codex" }))
 }
 
-async fn models(State(state): State<Arc<AppState>>) -> Response {
+async fn models(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Response {
     let start = Instant::now();
+    if let Some(response) = authorize(&state, &headers) {
+        return response;
+    }
     let member = {
         let mut config = state.config.lock().expect("config lock poisoned");
         pool::choose_member(&mut config)
@@ -90,6 +93,9 @@ async fn forward(
     body: Bytes,
 ) -> Response {
     let start = Instant::now();
+    if let Some(response) = authorize(&state, &headers) {
+        return response;
+    }
     let member = {
         let mut config = state.config.lock().expect("config lock poisoned");
         pool::choose_member(&mut config)
@@ -177,6 +183,37 @@ async fn handle_upstream_response(
             });
             openai_error(StatusCode::BAD_GATEWAY, "bad_gateway", "Failed to reach upstream provider")
         }
+    }
+}
+
+fn authorize(state: &AppState, headers: &HeaderMap) -> Option<Response> {
+    let token = state
+        .config
+        .lock()
+        .expect("config lock poisoned")
+        .local_proxy_token
+        .clone();
+
+    if token.trim().is_empty() {
+        return None;
+    }
+
+    let bearer_ok = headers
+        .get("authorization")
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value == format!("Bearer {token}"))
+        .unwrap_or(false);
+
+    let key_ok = headers
+        .get("x-api-key")
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value == token)
+        .unwrap_or(false);
+
+    if bearer_ok || key_ok {
+        None
+    } else {
+        Some(openai_error(StatusCode::UNAUTHORIZED, "authentication_error", "Invalid local proxy token"))
     }
 }
 

@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod desktop_config;
 mod logging;
 mod models;
 mod pool;
@@ -31,6 +32,8 @@ pub fn run() {
             commands::stop_claude_proxy,
             commands::proxy_status,
             commands::get_logs,
+            commands::write_codex_environment,
+            commands::write_claude_gateway_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
