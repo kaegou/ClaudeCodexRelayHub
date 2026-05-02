@@ -9,7 +9,7 @@ use axum::{
     Json, Router,
 };
 use chrono::Utc;
-use serde_json::json;
+use serde_json::{json, Value};
 use tokio::{net::TcpListener, sync::oneshot};
 
 use crate::{
@@ -66,7 +66,16 @@ async fn models(State(state): State<Arc<AppState>>, headers: HeaderMap) -> Respo
         .bearer_auth(&provider.api_key)
         .send()
         .await;
-    handle_upstream_response(state, provider.id, "GET", "/v1/models", start, response).await
+    handle_upstream_response(
+        state,
+        provider.id,
+        "GET",
+        "/v1/models",
+        None,
+        start,
+        response,
+    )
+    .await
 }
 
 async fn forward_root(
@@ -133,12 +142,14 @@ async fn forward(
         request = request.header(name, value);
     }
 
+    let model = extract_model(&body);
     let response = request.body(body).send().await;
     handle_upstream_response(
         state,
         provider.id,
         method.as_str(),
         &format!("/v1{path}"),
+        model,
         start,
         response,
     )
@@ -150,6 +161,7 @@ async fn handle_upstream_response(
     provider_id: String,
     method: &str,
     path: &str,
+    model: Option<String>,
     start: Instant,
     response: Result<reqwest::Response, reqwest::Error>,
 ) -> Response {
@@ -168,7 +180,7 @@ async fn handle_upstream_response(
                 path: path.to_string(),
                 status: status_code,
                 duration_ms: start.elapsed().as_millis(),
-                message: sanitize(&format!("upstream HTTP {status_code}")),
+                message: sanitize(&log_message(status_code, model.as_deref())),
             });
 
             let mut builder = Response::builder().status(status);
@@ -201,7 +213,10 @@ async fn handle_upstream_response(
                 path: path.to_string(),
                 status: 502,
                 duration_ms: start.elapsed().as_millis(),
-                message: sanitize(&error.to_string()),
+                message: sanitize(&match model.as_deref() {
+                    Some(model) => format!("{} model={model}", error),
+                    None => error.to_string(),
+                }),
             });
             claude_error(
                 StatusCode::BAD_GATEWAY,
@@ -209,6 +224,24 @@ async fn handle_upstream_response(
                 "Failed to reach upstream provider",
             )
         }
+    }
+}
+
+fn extract_model(body: &Bytes) -> Option<String> {
+    serde_json::from_slice::<Value>(body)
+        .ok()
+        .and_then(|value| {
+            value
+                .get("model")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+        })
+}
+
+fn log_message(status_code: u16, model: Option<&str>) -> String {
+    match model {
+        Some(model) => format!("upstream HTTP {status_code} model={model}"),
+        None => format!("upstream HTTP {status_code}"),
     }
 }
 
