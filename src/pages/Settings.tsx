@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CopyButton from '../components/CopyButton';
 import { api } from '../lib/tauri';
 import type { AppConfig } from '../lib/types';
 
@@ -12,6 +13,9 @@ export default function SettingsPage({
   onSave: (config: AppConfig) => Promise<void>;
 }) {
   const [message, setMessage] = useState<string | null>(null);
+  const codexBaseUrl = `http://127.0.0.1:${config.codexProxyPort}/v1`;
+  const codexEnv = `OPENAI_BASE_URL=${codexBaseUrl}
+OPENAI_API_KEY=${config.localProxyToken}`;
 
   async function run(action: () => Promise<string>) {
     setMessage(null);
@@ -57,11 +61,18 @@ export default function SettingsPage({
 
       <section className="panel copy-box wide">
         <span>Codex 推荐配置</span>
-        <code>OPENAI_BASE_URL=http://127.0.0.1:{config.codexProxyPort}/v1</code>
-        <code>OPENAI_API_KEY={config.localProxyToken}</code>
+        <div className="code-row">
+          <code>OPENAI_BASE_URL={codexBaseUrl}</code>
+          <CopyButton value={`OPENAI_BASE_URL=${codexBaseUrl}`} />
+        </div>
+        <div className="code-row">
+          <code>OPENAI_API_KEY={config.localProxyToken}</code>
+          <CopyButton value={`OPENAI_API_KEY=${config.localProxyToken}`} />
+        </div>
         <p>点击下面按钮会写入当前 Windows 用户环境变量，新终端或新启动的 Codex 进程会读取到。</p>
         <div className="actions">
           <button disabled={busy} onClick={() => run(api.writeCodexEnvironment)}>写入 Codex 环境变量</button>
+          <CopyButton value={codexEnv} label="复制配置" />
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 import { api } from '../lib/tauri';
 import type { AppConfig, ProxyStatus, RequestLogEntry } from '../lib/types';
+import CopyButton from '../components/CopyButton';
 import LogViewer from '../components/LogViewer';
 import StatusBadge from '../components/StatusBadge';
 
@@ -16,6 +17,9 @@ export default function Proxy({
   busy: boolean;
   onRefresh: () => Promise<void>;
 }) {
+  const codexEndpoint = `http://127.0.0.1:${config.codexProxyPort}/v1`;
+  const claudeEndpoint = `http://127.0.0.1:${config.claudeProxyPort}`;
+
   async function run(action: () => Promise<void>) {
     await action();
     await onRefresh();
@@ -31,7 +35,10 @@ export default function Proxy({
           </div>
           <div className="endpoint-card">
             <StatusBadge value={status.codexRunning} />
-            <code>http://127.0.0.1:{config.codexProxyPort}/v1</code>
+            <div className="code-row">
+              <code>{codexEndpoint}</code>
+              <CopyButton value={codexEndpoint} />
+            </div>
           </div>
           <div className="actions">
             <button disabled={busy || status.codexRunning} onClick={() => run(api.startCodexProxy)}>启动 Codex 代理</button>
@@ -46,7 +53,10 @@ export default function Proxy({
           </div>
           <div className="endpoint-card">
             <StatusBadge value={status.claudeRunning} />
-            <code>http://127.0.0.1:{config.claudeProxyPort}</code>
+            <div className="code-row">
+              <code>{claudeEndpoint}</code>
+              <CopyButton value={claudeEndpoint} />
+            </div>
           </div>
           <div className="actions">
             <button disabled={busy || status.claudeRunning} onClick={() => run(api.startClaudeProxy)}>启动 Claude 代理</button>

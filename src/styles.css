@@ -22,6 +22,7 @@ button { border: 0; border-radius: 10px; background: var(--primary); color: whit
 button:hover { background: var(--primary-dark); }
 button:disabled { opacity: .55; cursor: not-allowed; }
 button.ghost { background: #eef0fb; color: var(--primary); }
+button.small { padding: 6px 9px; border-radius: 8px; font-size: 12px; }
 button.danger { color: var(--red); }
 button.danger:not(.ghost) { background: var(--red); color: white; }
 input, select { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; color: var(--heading); background: white; }
@@ -70,6 +71,8 @@ h2 { font-size: 25px; }
 .cards-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .provider-card { display: grid; gap: 12px; }
 .endpoint-card { display: grid; gap: 10px; margin-bottom: 14px; }
+.code-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.code-row code { flex: 1; min-width: 260px; }
 .status { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 .status.ok { color: var(--green); background: #eafaf2; }
 .status.idle { color: var(--muted); background: #eef1f6; }
