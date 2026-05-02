@@ -20,7 +20,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let config = config::load_config(app.handle())?;
-            let state = Arc::new(AppState::new(config));
+            let state = Arc::new(AppState::new(config)?);
             app.manage(state.clone());
             health::start(app.handle().clone(), state);
             Ok(())

@@ -1,6 +1,6 @@
-use std::sync::Mutex;
+use std::{sync::Mutex, time::Duration};
 
-use reqwest::Client;
+use reqwest::{Client, ClientBuilder};
 use tokio::sync::oneshot;
 
 use crate::{logging::LogStore, models::AppConfig};
@@ -15,14 +15,17 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(config: AppConfig) -> Self {
-        Self {
+    pub fn new(config: AppConfig) -> anyhow::Result<Self> {
+        Ok(Self {
             config: Mutex::new(config),
             logs: LogStore::default(),
-            http: Client::new(),
+            http: ClientBuilder::new()
+                .timeout(Duration::from_secs(90))
+                .connect_timeout(Duration::from_secs(15))
+                .build()?,
             codex_shutdown: Mutex::new(None),
             claude_shutdown: Mutex::new(None),
             last_codex_member_id: Mutex::new(None),
-        }
+        })
     }
 }
