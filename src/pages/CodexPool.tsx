@@ -37,16 +37,19 @@ export default function CodexPool({
 }) {
   const [editing, setEditing] = useState<CodexPoolMember | null>(null);
   const [modelsText, setModelsText] = useState('');
+  const [showKey, setShowKey] = useState(false);
 
   function edit(member: CodexPoolMember) {
     setEditing({ ...member });
     setModelsText(joinModels(member.models));
+    setShowKey(false);
   }
 
   function add() {
     const member = emptyMember();
     setEditing(member);
     setModelsText(joinModels(member.models));
+    setShowKey(false);
   }
 
   async function saveMember() {
@@ -156,7 +159,13 @@ export default function CodexPool({
           <div className="form-grid">
             <label>名称<input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label>
             <label>API Base URL<input value={editing.apiBase} onChange={(event) => setEditing({ ...editing, apiBase: event.target.value })} /></label>
-            <label>API Key<input type="password" value={editing.apiKey} onChange={(event) => setEditing({ ...editing, apiKey: event.target.value })} /></label>
+            <label>
+              API Key
+              <div className="input-row">
+                <input type={showKey ? 'text' : 'password'} value={editing.apiKey} onChange={(event) => setEditing({ ...editing, apiKey: event.target.value })} />
+                <button className="ghost small" type="button" onClick={() => setShowKey(!showKey)}>{showKey ? '隐藏' : '显示'}</button>
+              </div>
+            </label>
             <label>模型列表<input value={modelsText} onChange={(event) => setModelsText(event.target.value)} /></label>
             <label>默认模型<input value={editing.defaultModel} onChange={(event) => setEditing({ ...editing, defaultModel: event.target.value })} /></label>
             <label>权重<input type="number" value={editing.weight} onChange={(event) => setEditing({ ...editing, weight: Number(event.target.value) })} /></label>

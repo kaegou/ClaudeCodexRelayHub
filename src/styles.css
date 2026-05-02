@@ -73,6 +73,7 @@ h2 { font-size: 25px; }
 .provider-card { display: grid; gap: 12px; }
 .endpoint-card { display: grid; gap: 10px; margin-bottom: 14px; }
 .code-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.input-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 .code-row code { flex: 1; min-width: 260px; }
 .status { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 .status.ok { color: var(--green); background: #eafaf2; }

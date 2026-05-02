@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { api } from '../lib/tauri';
 import type { AppConfig, ProviderProfile } from '../lib/types';
 import { joinModels, normalizeBaseUrl, splitModels, uid } from '../lib/utils';
@@ -11,6 +12,8 @@ export default function Providers({
   busy: boolean;
   onSave: (config: AppConfig) => Promise<void>;
 }) {
+  const [showKeys, setShowKeys] = useState(false);
+
   async function addClaudeProvider() {
     const id = uid('claude');
     await onSave({
@@ -96,7 +99,13 @@ export default function Providers({
             {provider.lastError && <div className="alert error">{provider.lastError}</div>}
             <label>名称<input value={provider.name} onChange={(event) => updateProvider(provider.id, { name: event.target.value })} /></label>
             <label>API Base URL<input value={provider.apiBase} onBlur={() => updateProvider(provider.id, { apiBase: normalizeBaseUrl(provider.apiBase) })} onChange={(event) => updateProvider(provider.id, { apiBase: event.target.value })} /></label>
-            <label>API Key<input type="password" value={provider.apiKey} onChange={(event) => updateProvider(provider.id, { apiKey: event.target.value })} /></label>
+            <label>
+              API Key
+              <div className="input-row">
+                <input type={showKeys ? 'text' : 'password'} value={provider.apiKey} onChange={(event) => updateProvider(provider.id, { apiKey: event.target.value })} />
+                <button className="ghost small" type="button" onClick={() => setShowKeys(!showKeys)}>{showKeys ? '隐藏' : '显示'}</button>
+              </div>
+            </label>
             <label>模型列表<input value={joinModels(provider.models)} onChange={(event) => updateProvider(provider.id, { models: splitModels(event.target.value) })} /></label>
             <label>默认模型<input value={provider.defaultModel} onChange={(event) => updateProvider(provider.id, { defaultModel: event.target.value })} /></label>
             <label>思考模型<input value={provider.thinkModel} onChange={(event) => updateProvider(provider.id, { thinkModel: event.target.value })} /></label>
