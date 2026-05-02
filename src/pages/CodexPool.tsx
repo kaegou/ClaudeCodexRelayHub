@@ -80,6 +80,10 @@ export default function CodexPool({
     });
   }
 
+  function formatTime(value: string | null) {
+    return value ? new Date(value).toLocaleString() : '未检查';
+  }
+
   return (
     <div className="page-stack">
       <section className="panel page-header-card">
@@ -120,8 +124,17 @@ export default function CodexPool({
                 </td>
                 <td><code>{member.apiBase}</code></td>
                 <td>{member.defaultModel}</td>
-                <td><StatusBadge value={member.health} /></td>
-                <td>{member.weight} / {member.priority}</td>
+                <td>
+                  <StatusBadge value={member.health} />
+                  <small>上次检查：{formatTime(member.lastCheckedAt)}</small>
+                  {member.cooldownUntil && <small>冷却至：{formatTime(member.cooldownUntil)}</small>}
+                  {member.lastError && <small className="inline-error">{member.lastError}</small>}
+                </td>
+                <td>
+                  {member.weight} / {member.priority}
+                  <small>并发：{member.inflight}/{member.maxConcurrentRequests || '∞'}</small>
+                  <small>冷却：{member.cooldownSeconds}s</small>
+                </td>
                 <td>{member.successCount} / {member.failureCount}</td>
                 <td className="row-actions">
                   <button className="ghost" disabled={busy} onClick={() => edit(member)}>编辑</button>

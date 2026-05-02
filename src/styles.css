@@ -51,6 +51,7 @@ h2 { font-size: 25px; }
 .page-stack { display: grid; gap: 18px; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 16px 36px rgba(25,31,45,.06); padding: 22px; }
 .alert.error { background: #fff0f3; color: var(--red); border: 1px solid rgba(223,66,99,.2); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.inline-error { color: var(--red); }
 .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .stat-card { display: grid; gap: 8px; }
 .stat-card span, .section-title small, .copy-box span { color: var(--muted); font-size: 13px; }
