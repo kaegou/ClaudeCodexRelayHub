@@ -6,12 +6,14 @@ export default function Dashboard({
   config,
   status,
   logs,
-  activeClaudeProvider
+  activeClaudeProvider,
+  onClearLogs
 }: {
   config: AppConfig;
   status: ProxyStatus;
   logs: RequestLogEntry[];
   activeClaudeProvider: ProviderProfile | null;
+  onClearLogs: () => Promise<void>;
 }) {
   const healthyMembers = config.codexPool.members.filter((member) => member.health === 'healthy').length;
   const enabledMembers = config.codexPool.members.filter((member) => member.enabled).length;
@@ -38,7 +40,7 @@ export default function Dashboard({
         </div>
       </section>
 
-      <LogViewer logs={logs} />
+      <LogViewer logs={logs} onClear={onClearLogs} />
     </div>
   );
 }

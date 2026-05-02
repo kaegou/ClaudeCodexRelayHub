@@ -1,6 +1,12 @@
 import type { RequestLogEntry } from '../lib/types';
 
-export default function LogViewer({ logs }: { logs: RequestLogEntry[] }) {
+export default function LogViewer({
+  logs,
+  onClear
+}: {
+  logs: RequestLogEntry[];
+  onClear?: () => Promise<void>;
+}) {
   return (
     <section className="panel log-panel">
       <div className="section-title">

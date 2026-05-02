@@ -9,13 +9,15 @@ export default function Proxy({
   status,
   logs,
   busy,
-  onRefresh
+  onRefresh,
+  onClearLogs
 }: {
   config: AppConfig;
   status: ProxyStatus;
   logs: RequestLogEntry[];
   busy: boolean;
   onRefresh: () => Promise<void>;
+  onClearLogs: () => Promise<void>;
 }) {
   const codexEndpoint = `http://127.0.0.1:${config.codexProxyPort}/v1`;
   const claudeEndpoint = `http://127.0.0.1:${config.claudeProxyPort}`;
@@ -78,7 +80,7 @@ export default function Proxy({
         </div>
       </section>
 
-      <LogViewer logs={logs} />
+      <LogViewer logs={logs} onClear={onClearLogs} />
     </div>
   );
 }

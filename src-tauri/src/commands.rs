@@ -310,6 +310,13 @@ pub async fn get_logs(state: State<'_, Arc<AppState>>) -> Result<Vec<RequestLogE
 }
 
 #[tauri::command]
+pub async fn clear_logs(state: State<'_, Arc<AppState>>) -> Result<(), String> {
+    state.logs.clear();
+    state.logs.info("system", "Logs cleared");
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn write_codex_environment(state: State<'_, Arc<AppState>>) -> Result<String, String> {
     let config = state
         .config

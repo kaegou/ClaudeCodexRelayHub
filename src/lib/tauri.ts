@@ -13,6 +13,7 @@ export const api = {
   stopClaudeProxy: () => invoke<void>('stop_claude_proxy'),
   proxyStatus: () => invoke<ProxyStatus>('proxy_status'),
   getLogs: () => invoke<RequestLogEntry[]>('get_logs'),
+  clearLogs: () => invoke<void>('clear_logs'),
   writeCodexEnvironment: () => invoke<string>('write_codex_environment'),
   writeClaudeGatewayConfig: () => invoke<string>('write_claude_gateway_config')
 };

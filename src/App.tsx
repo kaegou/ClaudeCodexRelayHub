@@ -85,6 +85,16 @@ export default function App() {
     }
   }
 
+  async function clearLogs() {
+    setBusy(true);
+    try {
+      await api.clearLogs();
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
   useEffect(() => {
     refresh();
     const timer = window.setInterval(refresh, 5000);
@@ -133,7 +143,7 @@ export default function App() {
         {error && <div className="alert error">{error}</div>}
 
         {activeTab === 'dashboard' && (
-          <Dashboard config={config} status={status} logs={logs} activeClaudeProvider={activeClaudeProvider} />
+          <Dashboard config={config} status={status} logs={logs} activeClaudeProvider={activeClaudeProvider} onClearLogs={clearLogs} />
         )}
         {activeTab === 'pool' && (
           <CodexPool config={config} busy={busy} onSave={saveConfig} onTestMember={testMember} />
@@ -142,7 +152,7 @@ export default function App() {
           <Providers config={config} busy={busy} onSave={saveConfig} />
         )}
         {activeTab === 'proxy' && (
-          <Proxy config={config} status={status} logs={logs} busy={busy} onRefresh={refresh} />
+          <Proxy config={config} status={status} logs={logs} busy={busy} onRefresh={refresh} onClearLogs={clearLogs} />
         )}
         {activeTab === 'settings' && (
           <SettingsPage config={config} busy={busy} onSave={saveConfig} />

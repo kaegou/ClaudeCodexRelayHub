@@ -22,6 +22,10 @@ impl LogStore {
         self.entries.lock().expect("log lock poisoned").clone()
     }
 
+    pub fn clear(&self) {
+        self.entries.lock().expect("log lock poisoned").clear();
+    }
+
     pub fn info(&self, target: &str, message: impl Into<String>) {
         self.push(RequestLogEntry {
             timestamp: Utc::now().to_rfc3339(),
