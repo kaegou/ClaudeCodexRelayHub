@@ -66,6 +66,20 @@ export type ProxyStatus = {
   lastCodexMemberId: string | null;
 };
 
+export type LocalProxyDiagnostic = {
+  target: string;
+  url: string;
+  ok: boolean;
+  status: number | null;
+  durationMs: number;
+  message: string;
+};
+
+export type LocalProxyDiagnostics = {
+  codex: LocalProxyDiagnostic;
+  claude: LocalProxyDiagnostic;
+};
+
 export type RequestLogEntry = {
   timestamp: string;
   target: string;

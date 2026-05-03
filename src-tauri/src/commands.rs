@@ -1,4 +1,4 @@
-use std::{net::TcpListener, process::Command, sync::Arc};
+use std::{net::TcpListener, process::Command, sync::Arc, time::Instant};
 
 use anyhow::Result;
 use tauri::{AppHandle, State};
@@ -6,7 +6,10 @@ use tokio::sync::oneshot;
 
 use crate::{
     config, desktop_config, health,
-    models::{AppConfig, CodexPoolMember, ProviderProfile, ProxyStatus, RequestLogEntry},
+    models::{
+        AppConfig, CodexPoolMember, LocalProxyDiagnostic, LocalProxyDiagnostics, ProviderProfile,
+        ProxyStatus, RequestLogEntry,
+    },
     provider_client,
     proxy::{claude, codex},
     state::AppState,
@@ -302,6 +305,60 @@ pub async fn proxy_status(state: State<'_, Arc<AppState>>) -> Result<ProxyStatus
             .map_err(|error| error.to_string())?
             .clone(),
     })
+}
+
+#[tauri::command]
+pub async fn local_proxy_diagnostics(
+    state: State<'_, Arc<AppState>>,
+) -> Result<LocalProxyDiagnostics, String> {
+    let config = state
+        .config
+        .lock()
+        .map_err(|error| error.to_string())?
+        .clone();
+
+    let codex_url = format!("http://127.0.0.1:{}/health", config.codex_proxy_port);
+    let claude_url = format!("http://127.0.0.1:{}/health", config.claude_proxy_port);
+
+    let (codex, claude) = tokio::join!(
+        check_local_proxy(&state, "codex", codex_url),
+        check_local_proxy(&state, "claude", claude_url)
+    );
+
+    Ok(LocalProxyDiagnostics { codex, claude })
+}
+
+async fn check_local_proxy(
+    state: &Arc<AppState>,
+    target: &str,
+    url: String,
+) -> LocalProxyDiagnostic {
+    let start = Instant::now();
+    match state.http.get(&url).send().await {
+        Ok(response) => {
+            let status = response.status();
+            LocalProxyDiagnostic {
+                target: target.to_string(),
+                url,
+                ok: status.is_success(),
+                status: Some(status.as_u16()),
+                duration_ms: start.elapsed().as_millis(),
+                message: if status.is_success() {
+                    "health endpoint reachable".to_string()
+                } else {
+                    format!("health endpoint returned HTTP {}", status.as_u16())
+                },
+            }
+        }
+        Err(error) => LocalProxyDiagnostic {
+            target: target.to_string(),
+            url,
+            ok: false,
+            status: None,
+            duration_ms: start.elapsed().as_millis(),
+            message: error.to_string(),
+        },
+    }
 }
 
 #[tauri::command]

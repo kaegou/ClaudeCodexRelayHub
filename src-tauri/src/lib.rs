@@ -36,6 +36,7 @@ pub fn run() {
             commands::start_claude_proxy,
             commands::stop_claude_proxy,
             commands::proxy_status,
+            commands::local_proxy_diagnostics,
             commands::get_logs,
             commands::clear_logs,
             commands::write_codex_environment,

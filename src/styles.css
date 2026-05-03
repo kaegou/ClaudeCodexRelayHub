@@ -98,6 +98,13 @@ h2 { font-size: 25px; }
 .readiness-card.pass svg { color: var(--green); }
 .readiness-card.warn svg { color: var(--yellow); }
 .readiness-card.todo svg { color: var(--red); }
+.diagnostics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.diagnostic-card { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--panel-soft); }
+.diagnostic-card.pass { border-color: rgba(32,166,106,.28); background: #f0fbf5; }
+.diagnostic-card.todo { border-color: rgba(223,66,99,.18); }
+.diagnostic-card strong { color: var(--heading); }
+.diagnostic-card p { margin: 0; color: var(--muted); }
+.diagnostic-card small { color: var(--muted); }
 .guide-list { display: grid; gap: 12px; }
 .guide-list ol { margin: 0; padding-left: 20px; color: var(--text); }
 .guide-list li + li { margin-top: 8px; }
@@ -106,6 +113,6 @@ h2 { font-size: 25px; }
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: center; overflow-x: auto; }
   .sidebar nav { display: flex; }
-  .stats-grid, .cards-grid, .two-column, .hero-panel, .page-header-card, .readiness-grid { grid-template-columns: 1fr; }
+  .stats-grid, .cards-grid, .two-column, .hero-panel, .page-header-card, .readiness-grid, .diagnostics-grid { grid-template-columns: 1fr; }
   .form-panel .form-grid, .log-filters { grid-template-columns: 1fr; }
 }

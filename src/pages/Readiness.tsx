@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { CheckCircle2, CircleAlert, CircleDot } from 'lucide-react';
 import CopyButton from '../components/CopyButton';
-import type { AppConfig, ProviderProfile, ProxyStatus } from '../lib/types';
+import { api } from '../lib/tauri';
+import type { AppConfig, LocalProxyDiagnostics, ProviderProfile, ProxyStatus } from '../lib/types';
 
 type CheckState = 'pass' | 'warn' | 'todo';
 
@@ -19,6 +21,9 @@ export default function ReadinessPage({
   status: ProxyStatus;
   activeClaudeProvider: ProviderProfile | null;
 }) {
+  const [diagnostics, setDiagnostics] = useState<LocalProxyDiagnostics | null>(null);
+  const [diagnosticsBusy, setDiagnosticsBusy] = useState(false);
+  const [diagnosticsError, setDiagnosticsError] = useState<string | null>(null);
   const enabledMembers = config.codexPool.members.filter((member) => member.enabled);
   const healthyMembers = enabledMembers.filter((member) => member.health === 'healthy');
   const membersWithKeys = enabledMembers.filter((member) => member.apiBase.trim() && member.apiKey.trim() && member.defaultModel.trim());
@@ -60,6 +65,18 @@ export default function ReadinessPage({
     }
   ];
 
+  async function runDiagnostics() {
+    setDiagnosticsBusy(true);
+    setDiagnosticsError(null);
+    try {
+      setDiagnostics(await api.localProxyDiagnostics());
+    } catch (error) {
+      setDiagnosticsError(String(error));
+    } finally {
+      setDiagnosticsBusy(false);
+    }
+  }
+
   const passed = checks.filter((check) => check.state === 'pass').length;
   const score = Math.round((passed / checks.length) * 100);
 
@@ -89,6 +106,30 @@ export default function ReadinessPage({
             </div>
           </div>
         ))}
+      </section>
+
+      <section className="panel">
+        <div className="section-title row">
+          <div>
+            <span>本地代理 Health 自检</span>
+            <small>直接请求 Claude / Codex 本机代理的 /health，确认端口和服务真实可达。</small>
+          </div>
+          <button className="ghost" disabled={diagnosticsBusy} onClick={runDiagnostics}>运行本地自检</button>
+        </div>
+        {diagnosticsError && <div className="alert error">{diagnosticsError}</div>}
+        <div className="diagnostics-grid">
+          {(['codex', 'claude'] as const).map((target) => {
+            const item = diagnostics?.[target];
+            return (
+              <div className={`diagnostic-card ${item?.ok ? 'pass' : 'todo'}`} key={target}>
+                <strong>{target === 'codex' ? 'Codex Proxy' : 'Claude Proxy'}</strong>
+                <code>{item?.url ?? (target === 'codex' ? `${codexEndpoint.replace('/v1', '')}/health` : `${claudeEndpoint}/health`)}</code>
+                <p>{item ? item.message : '尚未运行本地自检。'}</p>
+                <small>{item ? `HTTP ${item.status ?? '-'} · ${item.durationMs}ms` : '点击按钮检测'}</small>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       <section className="panel two-column">

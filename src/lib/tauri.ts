@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AppConfig, CodexPoolMember, ProviderProfile, ProxyStatus, RequestLogEntry } from './types';
+import type { AppConfig, CodexPoolMember, LocalProxyDiagnostics, ProviderProfile, ProxyStatus, RequestLogEntry } from './types';
 
 export const api = {
   getConfig: () => invoke<AppConfig>('get_config'),
@@ -12,6 +12,7 @@ export const api = {
   startClaudeProxy: () => invoke<void>('start_claude_proxy'),
   stopClaudeProxy: () => invoke<void>('stop_claude_proxy'),
   proxyStatus: () => invoke<ProxyStatus>('proxy_status'),
+  localProxyDiagnostics: () => invoke<LocalProxyDiagnostics>('local_proxy_diagnostics'),
   getLogs: () => invoke<RequestLogEntry[]>('get_logs'),
   clearLogs: () => invoke<void>('clear_logs'),
   writeCodexEnvironment: () => invoke<string>('write_codex_environment'),

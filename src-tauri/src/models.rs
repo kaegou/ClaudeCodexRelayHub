@@ -160,6 +160,24 @@ pub struct ProxyStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct LocalProxyDiagnostic {
+    pub target: String,
+    pub url: String,
+    pub ok: bool,
+    pub status: Option<u16>,
+    pub duration_ms: u128,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalProxyDiagnostics {
+    pub codex: LocalProxyDiagnostic,
+    pub claude: LocalProxyDiagnostic,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RequestLogEntry {
     pub timestamp: String,
     pub target: String,
